@@ -17,12 +17,12 @@ class RegularUser(ModelViewSet):
         if hasattr(self, 'action') and self.action == 'create':
             return []
 
-        return self.authentication_classes
+        return [authentication_class() for authentication_class in self.authentication_classes]
 
     def get_permissions(self):
         if self.action == 'create':
             return []
-        return self.permission_classes
+        return [permission_class() for permission_class in self.permission_classes]
 
     def get_serializer_class(self):
         return serializers.UserRegularUser
@@ -43,12 +43,12 @@ class Counselor(ModelViewSet):
         if hasattr(self, 'action') and self.action == 'create':
             return []
 
-        return self.authentication_classes
+        return [authentication_class() for authentication_class in self.authentication_classes]
 
     def get_permissions(self):
         if self.action == 'create':
             return []
-        return self.permission_classes
+        return [permission_class() for permission_class in self.permission_classes]
 
     def get_serializer_class(self):
         return serializers.UserCounselor
