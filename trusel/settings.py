@@ -72,6 +72,9 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
+    'DEFAULT_PERMISSION_CLASSES': [
+        'utils.permissions_and_auth.MyUserPerm',
+    ],
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     'PAGE_SIZE': 10,
@@ -135,9 +138,9 @@ if not TRY_LOCAL_STORAGE:
 
 if TRY_LOCAL_DB:
     DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
 
@@ -152,7 +155,6 @@ else:
             'PASSWORD': config('DATABASES_DEFAULT_PASSWORD'),
         }
     }
-
 
 
 # Password validation
@@ -194,10 +196,10 @@ STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 STATICFILES_DIRS = [
-   BASE_DIR / 'static'
+    BASE_DIR / 'static'
 ]
 
-MEDIA_URL = '/media/'    
+MEDIA_URL = '/media/'
 
 MEDIA_ROOT = BASE_DIR / 'media'
 
@@ -209,12 +211,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'api.User'
 
-###DEVELOPMENT
+# DEVELOPMENT
 if TRY_LOCAL_EMAIL:
     EMAIL_HOST = 'localhost'
     EMAIL_PORT = '1025'
 
-###PRODUCTION
+# PRODUCTION
 else:
     EMAIL_HOST = config('EMAIL_HOST', 'smtp.gmail.com')
     EMAIL_HOST_USER = config('EMAIL_HOST_USER')

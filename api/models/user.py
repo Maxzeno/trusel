@@ -12,27 +12,29 @@ REGULAR_USER = 1
 COUNSELOR = 2
 MODERATOR = 3
 
+
 class BaseModel(models.Model):
-	created_at = models.DateTimeField(default=timezone.now)
-	updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
 
-	def generate_unique_id(self):
-		allowed_chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
-		unique_id = get_random_string(length=6, allowed_chars=allowed_chars)
-		while self.__class__.objects.filter(id=unique_id).exists():
-			unique_id = get_random_string(length=6, allowed_chars=allowed_chars)
-		return unique_id
+    def generate_unique_id(self):
+        allowed_chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+        unique_id = get_random_string(length=6, allowed_chars=allowed_chars)
+        while self.__class__.objects.filter(id=unique_id).exists():
+            unique_id = get_random_string(
+                length=6, allowed_chars=allowed_chars)
+        return unique_id
 
-	def generate_unique_slug(self, data="N/A"):
-		num = 1
-		new_slug = slugify(data=data)
-		while self.__class__.objects.filter(slug=new_slug).exists():
-			new_slug = f"{new_slug}-{num}"
-			num += 1
-		return new_slug
+    def generate_unique_slug(self, data="N/A"):
+        num = 1
+        new_slug = slugify(data=data)
+        while self.__class__.objects.filter(slug=new_slug).exists():
+            new_slug = f"{new_slug}-{num}"
+            num += 1
+        return new_slug
 
-	class Meta:
-		abstract = True
+    class Meta:
+        abstract = True
 
 
 class UserManager(BaseUserManager):
@@ -64,10 +66,10 @@ class UserManager(BaseUserManager):
 
 class User(AbstractBaseUser, PermissionsMixin, BaseModel):
     ROLES = [
-        (NONE, 'NONE'), 
-        (REGULAR_USER, 'USER'), 
-        (COUNSELOR, 'COUNSELOR'), 
-        (MODERATOR, 'ADMIN'), 
+        (NONE, 'NONE'),
+        (REGULAR_USER, 'USER'),
+        (COUNSELOR, 'COUNSELOR'),
+        (MODERATOR, 'MODERATOR'),
     ]
 
     id = models.CharField(primary_key=True, max_length=6, editable=False)
@@ -83,6 +85,9 @@ class User(AbstractBaseUser, PermissionsMixin, BaseModel):
     USERNAME_FIELD = 'email'
 
     def save(self, *args, **kwargs):
+        if not self.id:
+            self.id = self.generate_unique_id()
+
         user = self.__class__.objects.filter(id=self.id).first()
         if not user or user and user.password != self.password:
             self.set_password(self.password)
@@ -92,22 +97,21 @@ class User(AbstractBaseUser, PermissionsMixin, BaseModel):
 
         super().save(*args, **kwargs)
 
-    
     @property
     def is_none(self):
-          return self.role == NONE
-    
+        return self.role == NONE
+
     @property
     def is_regular_user(self):
-          return self.role == REGULAR_USER
-    
+        return self.role == REGULAR_USER
+
     @property
     def is_counselor(self):
-          return self.role == COUNSELOR
-    
+        return self.role == COUNSELOR
+
     @property
     def is_moderator(self):
-          return self.role == MODERATOR
+        return self.role == MODERATOR
 
     class Meta:
         verbose_name = 'user'
@@ -121,22 +125,22 @@ class User(AbstractBaseUser, PermissionsMixin, BaseModel):
 class RegularUser(models.Model):
     user = models.OneToOneField(User, on_delete=models.DO_NOTHING, null=True)
     profession = models.CharField(max_length=250, default='N/A')
-    
+
     def save(self, *args, **kwargs):
-        user = self.__class__.objects.filter(id=self.id).first()
+        user = User.objects.filter(id=self.user.id).first()
         if user and not user.is_regular_user:
             user.role = REGULAR_USER
             user.save()
 
         super().save(*args, **kwargs)
-	
+
 
 class Counselor(models.Model):
     user = models.OneToOneField(User, on_delete=models.DO_NOTHING, null=True)
     qualification = models.CharField(max_length=250, default='N/A')
-	
+
     def save(self, *args, **kwargs):
-        user = self.__class__.objects.filter(id=self.id).first()
+        user = User.objects.filter(id=self.user.id).first()
         if user and not user.is_counselor:
             user.role = COUNSELOR
             user.save()
@@ -147,9 +151,9 @@ class Counselor(models.Model):
 class Moderator(models.Model):
     user = models.OneToOneField(User, on_delete=models.DO_NOTHING, null=True)
     qualification = models.CharField(max_length=250, default='N/A')
-	
+
     def save(self, *args, **kwargs):
-        user = self.__class__.objects.filter(id=self.id).first()
+        user = User.objects.filter(id=self.user.id).first()
         if user and not user.is_moderator:
             user.role = MODERATOR
             user.save()

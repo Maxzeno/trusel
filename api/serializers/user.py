@@ -1,14 +1,41 @@
 from rest_framework import serializers
 from api import models
 
-class User(serializers.ModelSerializer):
-    class Meta:
-        model = models.User
-        exclude = ('groups', 'user_permissions')
-
 
 class RegularUser(serializers.ModelSerializer):
-    user = User()
     class Meta:
         model = models.RegularUser
-        fields = '__all__'
+        fields = ['profession']
+
+
+class Counselor(serializers.ModelSerializer):
+    class Meta:
+        model = models.Counselor
+        fields = ['qualification']
+
+
+class Moderator(serializers.ModelSerializer):
+    class Meta:
+        model = models.Moderator
+        fields = ['qualification']
+
+
+class UserSerializer(serializers.ModelSerializer):
+    user = None
+
+    class Meta:
+        model = models.User
+        fields = ['id', 'email', 'username', 'is_active', 'email_confirmed',
+                  'role', 'user']
+
+
+class UserRegularUser(UserSerializer):
+    user = RegularUser(source='regularuser')
+
+
+class UserModerator(UserSerializer):
+    user = Moderator(source='moderator')
+
+
+class UserCounselor(UserSerializer):
+    user = Counselor(source='counselor')

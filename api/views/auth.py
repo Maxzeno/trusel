@@ -11,7 +11,6 @@ from rest_framework_simplejwt.views import (
 )
 
 
-
 class NoPatchPermission(BasePermission):
     def has_permission(self, request, view):
         if request.method == "PATCH":
@@ -20,30 +19,30 @@ class NoPatchPermission(BasePermission):
 
 
 class UpdateOnlyAPIView(mixins.UpdateModelMixin,
-                    generics.GenericAPIView):
+                        generics.GenericAPIView):
     """
     Concrete view for updating a model instance.
     """
+
     def put(self, request, *args, **kwargs):
         return self.update(request, *args, **kwargs)
 
 
-
 @extend_schema(tags=['Auth'])
 class MyTokenObtainPairView(TokenObtainPairView):
-	pass
+    pass
 
 
 @extend_schema(tags=['Auth'])
 class MyTokenRefreshView(TokenRefreshView):
-	pass
+    pass
 
 
 @extend_schema(tags=['Auth'])
 class MyTokenVerifyView(TokenVerifyView):
-	pass
+    pass
 
 
 @extend_schema(tags=['Auth'])
 class MyTokenBlacklistView(TokenBlacklistView):
-	pass
+    pass
