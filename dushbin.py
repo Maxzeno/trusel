@@ -1,5 +1,33 @@
 
 
+# @extend_schema(tags=['RegularUser'])
+# class RegularUser(generics.ListCreateAPIView):
+#     permission_classes = ()
+#     authentication_classes = ()
+#     queryset = models.User.objects.filter(role=REGULAR_USER)
+#     serializer_class = serializers.UserRegularUser
+
+
+# @extend_schema(tags=['RegularUser'])
+# class RegularUserRD(generics.RetrieveUpdateDestroyAPIView):
+#     queryset = models.User.objects.filter(role=REGULAR_USER)
+#     serializer_class = serializers.UserRegularUser
+
+
+# @extend_schema(tags=['Moderator'])
+# class Moderator(generics.ListCreateAPIView):
+#     permission_classes = ()
+#     authentication_classes = ()
+#     queryset = models.User.objects.filter(role=MODERATOR)
+#     serializer_class = serializers.UserModerator
+
+
+# @extend_schema(tags=['Moderator'])
+# class ModeratorRD(generics.RetrieveUpdateDestroyAPIView):
+#     queryset = models.User.objects.filter(role=MODERATOR)
+#     serializer_class = serializers.UserModerator
+
+
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.authentication import SessionAuthentication, TokenAuthentication
 

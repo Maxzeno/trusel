@@ -138,6 +138,9 @@ class RegularUser(models.Model):
 class Counselor(models.Model):
     user = models.OneToOneField(User, on_delete=models.DO_NOTHING, null=True)
     qualification = models.CharField(max_length=250, default='N/A')
+    description = models.CharField(max_length=250, default='N/A')
+
+    is_approved = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         user = User.objects.filter(id=self.user.id).first()
