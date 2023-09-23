@@ -4,11 +4,16 @@ from drf_spectacular.utils import extend_schema
 from api.models.user import REGULAR_USER, COUNSELOR, MODERATOR
 from rest_framework.viewsets import ModelViewSet
 from api import serializers, models
+from rest_framework.parsers import MultiPartParser
 
 
 @extend_schema(tags=['RegularUser'])
 class RegularUser(ModelViewSet):
     queryset = models.User.objects.filter(role=REGULAR_USER)
+
+    def get_parsers(self):
+        self.parser_classes.append(MultiPartParser)
+        return [parser_class() for parser_class in self.parser_classes]
 
     def get_authenticators(self):
         if hasattr(self.request, 'method') and self.request.method == 'POST':
@@ -27,14 +32,18 @@ class RegularUser(ModelViewSet):
     def get_serializer_class(self):
         return serializers.UserRegularUser
 
-    def create(self, request, *args, **kwargs):
-        # print(request, dir(request), request.data, request.POST)
-        return super().create(request, *args, **kwargs)
+    # def create(self, request, *args, **kwargs):
+    #     # print(request, dir(request), request.data, request.POST)
+    #     return super().create(request, *args, **kwargs)
 
 
 @extend_schema(tags=['Counselor'])
 class Counselor(ModelViewSet):
     queryset = models.User.objects.filter(role=COUNSELOR)
+
+    def get_parsers(self):
+        self.parser_classes.append(MultiPartParser)
+        return [parser_class() for parser_class in self.parser_classes]
 
     def get_authenticators(self):
         if hasattr(self.request, 'method') and self.request.method == 'POST':
@@ -57,8 +66,10 @@ class Counselor(ModelViewSet):
 @extend_schema(tags=['Moderator'])
 class Moderator(ModelViewSet):
     queryset = models.User.objects.filter(role=MODERATOR)
-    # permission_classes = ()
-    # authentication_classes = ()
+
+    def get_parsers(self):
+        self.parser_classes.append(MultiPartParser)
+        return [parser_class() for parser_class in self.parser_classes]
 
     def get_serializer_class(self):
         return serializers.UserModerator
