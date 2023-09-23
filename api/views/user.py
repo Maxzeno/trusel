@@ -57,6 +57,8 @@ class Counselor(ModelViewSet):
 @extend_schema(tags=['Moderator'])
 class Moderator(ModelViewSet):
     queryset = models.User.objects.filter(role=MODERATOR)
+    # permission_classes = ()
+    # authentication_classes = ()
 
     def get_serializer_class(self):
         return serializers.UserModerator

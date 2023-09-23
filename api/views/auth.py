@@ -137,12 +137,8 @@ class PasswordResetView(UpdateOnlyAPIView):
             if password != password_again:
                 return Response({'detail': 'password and repeat does not match'}, status=status.HTTP_400_BAD_REQUEST)
             user.verify_otp(opt, verify_and_clear=True)
-            print('the pass', password)
-            print(user.password)
             user.password = password
-            print(user.password)
             user.save()
-            print(user.password)
 
             return Response({'detail': 'Password reset successful'}, status=status.HTTP_200_OK)
         return Response({'detail': 'Invalid token or user'}, status=status.HTTP_400_BAD_REQUEST)
