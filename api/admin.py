@@ -1,9 +1,16 @@
 from django.contrib import admin
-from api.models import User, RegularUser, Counselor, Moderator
+from django.contrib.auth.models import Group
+
+from api import models
 
 # Register your models here.
 
-admin.site.register(User)
-admin.site.register(RegularUser)
-admin.site.register(Counselor)
-admin.site.register(Moderator)
+admin.site.unregister(Group)
+admin.site.register(models.User)
+admin.site.register(models.RegularUser)
+admin.site.register(models.Counselor)
+admin.site.register(models.Moderator)
+
+# @admin.register(models.User)
+# class UserAdmin(admin.ModelAdmin):
+# 	pass
