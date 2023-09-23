@@ -28,7 +28,7 @@ class RegularUser(ModelViewSet):
         return serializers.UserRegularUser
 
     def create(self, request, *args, **kwargs):
-        print(request, dir(request), request.data, request.POST)
+        # print(request, dir(request), request.data, request.POST)
         return super().create(request, *args, **kwargs)
 
 

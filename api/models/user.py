@@ -3,6 +3,8 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 from django.utils.crypto import get_random_string
 from django.utils import timezone
 from django.utils.text import slugify
+import random
+from datetime import timedelta
 
 # Create your models here.
 
@@ -79,6 +81,8 @@ class User(AbstractBaseUser, PermissionsMixin, BaseModel):
     email_confirmed = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
     role = models.IntegerField(choices=ROLES, default=NONE)
+    otp = models.CharField(max_length=6, null=True, blank=True)
+    otp_expiry_date = models.DateTimeField(null=True, blank=True)
 
     objects = UserManager()
 
@@ -96,6 +100,29 @@ class User(AbstractBaseUser, PermissionsMixin, BaseModel):
             self.is_staff = True
 
         super().save(*args, **kwargs)
+
+    def generate_otp(self, length=6, hours=24):
+        characters = '0123456789'
+        if not self.otp_expiry_date or not self.otp or timezone.now() > self.otp_expiry_date:
+            otp = ''.join(random.choice(characters) for _ in range(length))
+            self.otp = otp
+            self.otp_expiry_date = timezone.now() + timedelta(hours=hours)
+            self.save()
+        return self.otp
+
+    def verify_otp(self, otp, verify_and_clear=True):
+        origin_otp = self.otp
+        origin_otp_expiry_date = self.otp_expiry_date
+
+        if not otp or not origin_otp or not origin_otp_expiry_date:
+            return False
+
+        if verify_and_clear:
+            self.otp = None
+            self.otp_expiry_date = None
+            self.save()
+
+        return timezone.now() < origin_otp_expiry_date and origin_otp == otp
 
     @property
     def is_none(self):

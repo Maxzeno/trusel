@@ -1,14 +1,12 @@
 
+from django.shortcuts import get_object_or_404
 from api import serializers
-from rest_framework.permissions import IsAuthenticated, BasePermission
+from rest_framework.permissions import BasePermission
 from decouple import config
 from django.core.mail import EmailMultiAlternatives
-from django.utils.encoding import force_bytes, force_str
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.contrib.auth import get_user_model
-from django.contrib.auth.tokens import default_token_generator
 from rest_framework.response import Response
-from rest_framework import generics, reverse, status, mixins, views
+from rest_framework import generics, status, mixins
 from django.core.exceptions import ValidationError
 from django.contrib.auth import password_validation
 from rest_framework import generics, mixins
@@ -55,8 +53,10 @@ class MyTokenBlacklistView(TokenBlacklistView):
 
 
 @extend_schema(tags=['Auth'])
-class UserView(views.APIView):
-    permission_classes = [IsAuthenticated]
+class UserView(generics.GenericAPIView):
+
+    def get_serializer_class(self):
+        return serializers.NoneUser
 
     def get(self, request):
         if request.user.is_regular_user:
@@ -69,7 +69,7 @@ class UserView(views.APIView):
             serializer = serializers.NoneUser(request.user)
         data = serializer.data
         data['token'] = request.META.get('HTTP_AUTHORIZATION', '').split()[-1]
-        return Response(data)
+        return Response(data, status=status.HTTP_200_OK)
 
 
 @extend_schema(tags=['Auth'])
@@ -79,27 +79,41 @@ class ForgotPasswordView(generics.CreateAPIView):
     permission_classes = ()
 
     def create(self, request, *args, **kwargs):
-        email = request.data.get('email')
+        email = request.data.get('email', '').strip()
         user = get_user_model().objects.filter(email=email).first()
 
         if user:
-            token = default_token_generator.make_token(user)
-            uid = urlsafe_base64_encode(force_bytes(user.pk))
-            reset_url = f"{request.get_host()}{reverse.reverse('password_reset', kwargs={'uid': uid, 'token': token})}"
-
             # html_body = get_template('login/template_confirm_email.html').render({'confirmation_email': link, 'base_url': base_url})
             try:
                 msg = EmailMultiAlternatives(
-                    'Password Reset',
-                    f'Click the following link to reset your password: {reset_url}',
+                    'Password Reset OTP Code',
+                    f'OTP code use it to confirm your email: {user.generate_otp()}',
                     config('EMAIL_HOST_USER'),
                     [email]
                 )
                 # msg.attach_alternative(html_body, "text/html")
                 msg.send()
+                return Response({'detail': 'If an account with this email exists, a password reset email has been sent.'}, status=status.HTTP_200_OK)
             except ConnectionRefusedError as e:
-                return Response({'message': 'An error accurred while tring to send email'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        return Response({'message': 'If an account with this email exists, a password reset email has been sent.'})
+                return Response({'detail': 'An error accurred while tring to send email'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({'detail': 'If an account with this email exists, a password reset email has been sent.'}, status=status.HTTP_200_OK)
+
+
+@extend_schema(tags=['Auth'])
+class VerifyOTP(generics.CreateAPIView):
+    authentication_classes = ()
+    permission_classes = ()
+    serializer_class = serializers.VerifyOTPSerializer
+
+    def create(self, request):
+        email = request.data.get('email', '').strip()
+        opt = request.data.get('otp', '').strip()
+        user = get_object_or_404(get_user_model(), email=email)
+        status_code = status.HTTP_404_NOT_FOUND
+        data = {'detail': user.verify_otp(opt, verify_and_clear=False)}
+        if data['detail']:
+            status_code = status.HTTP_200_OK
+        return Response(data, status=status_code)
 
 
 @extend_schema(tags=['Auth'])
@@ -109,21 +123,26 @@ class PasswordResetView(UpdateOnlyAPIView):
     permission_classes = ()
 
     def update(self, request, *args, **kwargs):
-        token = kwargs.get('token')
-        uid = kwargs.get('uid')
-        uid = force_str(urlsafe_base64_decode(uid))
-        user = get_user_model().objects.filter(pk=uid).first()
+        email = request.data.get('email', '').strip()
+        opt = request.data.get('otp', '').strip()
+        user = get_object_or_404(get_user_model(), email=email)
 
-        if user and default_token_generator.check_token(user, token):
-            password = request.data.get('password')
-            password_again = request.data.get('password_again')
+        if user and user.verify_otp(opt, verify_and_clear=False):
+            password = request.data.get('password', '').strip()
+            password_again = request.data.get('password_again', '').strip()
             try:
                 password_validation.validate_password(password)
             except ValidationError as e:
-                return Response({'message': e}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'detail': e.messages[-1]}, status=status.HTTP_400_BAD_REQUEST)
             if password != password_again:
-                return Response({'message': 'password and repeat does not match'}, status=status.HTTP_400_BAD_REQUEST)
-            user.set_password(password)
+                return Response({'detail': 'password and repeat does not match'}, status=status.HTTP_400_BAD_REQUEST)
+            user.verify_otp(opt, verify_and_clear=True)
+            print('the pass', password)
+            print(user.password)
+            user.password = password
+            print(user.password)
             user.save()
-            return Response({'message': 'Password reset successful'}, status=status.HTTP_200_OK)
-        return Response({'message': 'Invalid token or user'}, status=status.HTTP_400_BAD_REQUEST)
+            print(user.password)
+
+            return Response({'detail': 'Password reset successful'}, status=status.HTTP_200_OK)
+        return Response({'detail': 'Invalid token or user'}, status=status.HTTP_400_BAD_REQUEST)

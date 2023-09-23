@@ -22,9 +22,13 @@ urlpatterns = [
     path('get-auth-user/', views.UserView.as_view(),
          name='get_auth_user'),
 
+    path('verify-otp/', views.VerifyOTP.as_view(),
+         name='verify_otp'),
+
     path('forgot-password/', views.ForgotPasswordView.as_view(),
          name='forgot_password'),
-    path('password-reset/<str:uid>/<str:token>/',
+
+    path('password-reset/',
          views.PasswordResetView.as_view(), name='password_reset'),
 
 

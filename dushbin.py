@@ -1,4 +1,18 @@
+"""
 
+   def get_serializer_class(self):
+        # if hasattr(self.request, 'user') and self.request.user.is_authenticated:
+        #     if self.request.user.is_regular_user:
+        #         serializer = serializers.UserRegularUser
+        #     elif self.request.user.is_counselor:
+        #         serializer = serializers.UserCounselor
+        #     elif self.request.user.is_moderator:
+        #         serializer = serializers.UserModerator
+        #     else:
+        #         serializer = serializers.NoneUser
+        #     return serializer
+        return serializers.NoneUser
+    
 
 # @extend_schema(tags=['RegularUser'])
 # class RegularUser(generics.ListCreateAPIView):
@@ -126,3 +140,4 @@ class DynamicAuthenticationMiddleware:
 # 	def create(self, request, *args, **kwargs):
 # 		self.authentication_classes = ()
 # 		return super().create(request, *args, **kwargs)
+"""
