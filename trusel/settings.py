@@ -79,7 +79,7 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     'PAGE_SIZE': 10,
     'DEFAULT_ORDERING': ('created_at',),
-    'SCHEMA_GENERATOR_CLASS': 'trusel.api.utils.schema.MySchemaGenerator',
+    # 'SCHEMA_GENERATOR_CLASS': 'trusel.api.utils.schema.MySchemaGenerator',
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
