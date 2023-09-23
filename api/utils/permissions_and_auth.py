@@ -1,24 +1,5 @@
 from rest_framework.permissions import BasePermission
 
-# class MyUserPerm(BasePermission):
-#     def has_permission(self, request, view):
-#         if request.user and request.user.is_authenticated and request.user.is_staff and request.user.is_superuser:
-#             return True
-
-#         if request.user and request.user.is_authenticated:
-#             return True
-
-#         return False
-
-#     def has_object_permission(self, request, view, obj):
-#         if obj == request.user and request.user.is_authenticated:
-#             return True
-
-#         if request.user and request.user.is_authenticated and request.user.is_staff and request.user.is_superuser:
-#             return True
-
-#         return False
-
 
 class MyIsAdminUser(BasePermission):
     def has_permission(self, request, view):
@@ -46,11 +27,10 @@ class MyActualUser(BasePermission):
         return obj == request.user and request.user.is_authenticated
 
 
-class MyUserPerm:
-    def __init__(self):
-        self.op1 = MyIsAdminUser
-        self.op2 = MyActualUser
-        self.op3 = MyModeratorUser
+class MyUserPerm(BasePermission):
+    op1 = MyIsAdminUser()
+    op2 = MyActualUser()
+    op3 = MyModeratorUser()
 
     def has_permission(self, request, view):
         return (

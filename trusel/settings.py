@@ -73,13 +73,13 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': [
-        'utils.permissions_and_auth.MyUserPerm',
+        'api.utils.permissions_and_auth.MyUserPerm',
     ],
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     'PAGE_SIZE': 10,
     'DEFAULT_ORDERING': ('created_at',),
-    'SCHEMA_GENERATOR_CLASS': 'trusel.utils.schema.MySchemaGenerator',
+    'SCHEMA_GENERATOR_CLASS': 'trusel.api.utils.schema.MySchemaGenerator',
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
@@ -93,7 +93,7 @@ SPECTACULAR_SETTINGS = {
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
     'COMPONENT_SPLIT_REQUEST': True,
-    'SWAGGER_UI_DIST': 'SIDECAR',  # shorthand to use the sidecar instead
+    'SWAGGER_UI_DIST': 'SIDECAR',
     'SWAGGER_UI_FAVICON_HREF': 'SIDECAR',
     'REDOC_DIST': 'SIDECAR',
     'DEFAULT_REQUEST_BODY_FORMAT': 'application/x-www-form-urlencoded',

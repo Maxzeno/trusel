@@ -6,7 +6,8 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, Sp
 
 router = routers.DefaultRouter()
 
-# router.register('regular_user', views.RegularUser, basename='regular_user')
+router.register('regular-user', views.RegularUserViewSet,
+                basename='regular_user')
 
 urlpatterns = [
     path('', include(router.urls)),
@@ -19,12 +20,12 @@ urlpatterns = [
     # path('password-reset/<str:uid>/<str:token>/', views.PasswordResetView.as_view(), name='password_reset'),
     # path('user/', views.User.as_view(), name='user_list'),
     # path('user/<str:id>', views.UserDetails.as_view(), name='user_details'),
-    path('regular-user', views.RegularUser.as_view(), name='regular_user'),
-    path('regular-user/<str:pk>', views.RegularUserRD.as_view(),
-         name='regular_user_details'),
-    path('moderator', views.Moderator.as_view(), name='moderator'),
-    path('moderator/<str:pk>', views.ModeratorRD.as_view(),
-         name='moderator_details'),
+    #     path('regular-user', views.RegularUser.as_view(), name='regular_user'),
+    #     path('regular-user/<str:pk>', views.RegularUserRD.as_view(),
+    #          name='regular_user_details'),
+    #     path('moderator', views.Moderator.as_view(), name='moderator'),
+    #     path('moderator/<str:pk>', views.ModeratorRD.as_view(),
+    #          name='moderator_details'),
 
     path('schema/', SpectacularAPIView.as_view(), name='schema'),
     path('docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),

@@ -20,10 +20,6 @@ class NoPatchPermission(BasePermission):
 
 class UpdateOnlyAPIView(mixins.UpdateModelMixin,
                         generics.GenericAPIView):
-    """
-    Concrete view for updating a model instance.
-    """
-
     def put(self, request, *args, **kwargs):
         return self.update(request, *args, **kwargs)
 

@@ -1,2 +1,2 @@
 from api.views.auth import *
-from api.views.core import *
+from api.views.user import *

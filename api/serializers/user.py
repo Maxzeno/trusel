@@ -25,8 +25,9 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.User
-        fields = ['id', 'email', 'username', 'is_active', 'email_confirmed',
+        fields = ['id', 'email', 'password', 'username', 'is_active', 'email_confirmed',
                   'role', 'user']
+        extra_kwargs = {'password': {'write_only': True}}
 
 
 class UserRegularUser(UserSerializer):
@@ -39,3 +40,19 @@ class UserModerator(UserSerializer):
 
 class UserCounselor(UserSerializer):
     user = Counselor(source='counselor')
+
+# POST
+
+
+class UserPostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.User
+        fields = ['id', 'email', 'password', 'username', 'is_active', 'email_confirmed',
+                  'role', 'regularuser.profession']
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        regular_user = RegularUser.objects.filter(user=instance)
+
+        representation['profession'] = regular_user.profession
+        return representation
