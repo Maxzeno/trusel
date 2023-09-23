@@ -1,5 +1,56 @@
 """
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+from rest_framework import serializers
+from .models import Model1, Model2
+
+class CombinedModelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Model1
+        fields = '__all__'  # Include all fields from Model1
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # Get the fields from Model2 and add them to the serializer
+        model2_fields = [field.name for field in Model2._meta.get_fields()]
+        
+        for field_name in model2_fields:
+            self.fields[field_name] = serializers.CharField(source=f'model2.{field_name}')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
    def get_serializer_class(self):
         # if hasattr(self.request, 'user') and self.request.user.is_authenticated:
         #     if self.request.user.is_regular_user:
