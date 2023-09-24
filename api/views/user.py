@@ -43,7 +43,6 @@ class BaseUser(ModelViewSet):
         return self.serializers_get
 
     def create(self, request, *args, **kwargs):
-        print(request.data, 'request.data')
         serializer = self.serializers_other(data=request.data)
         if serializer.is_valid():
             data = serializer.create(serializer.data)

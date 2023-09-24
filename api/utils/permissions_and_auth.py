@@ -1,53 +1,99 @@
 from rest_framework.permissions import BasePermission, SAFE_METHODS
+from api import models
 
 
-class MyIsAdminUser(BasePermission):
+class MyAdminUser(BasePermission):
     def has_permission(self, request, view):
-        return bool(request.user and request.user.is_authenticated and request.user.is_staff and request.user.is_superuser)
+        if request.user and request.user.is_authenticated and request.user.is_staff and request.user.is_superuser:
+            try:
+                obj = view.get_object()
+            except AssertionError:
+                obj = None
 
-    def has_object_permission(self, request, view, obj):
-        return self.has_permission(request, view)
+            if obj != request.user and isinstance(obj, models.User) and obj.is_superuser:
+                return False
+            return True
+        return False
 
 
 class MyModeratorUser(BasePermission):
     def has_permission(self, request, view):
-        if request.method not in ['POST', 'DELETE']:
-            return bool(request.user and request.user.is_authenticated and request.user.is_moderator)
+        if request.user and request.user.is_authenticated and request.user.is_moderator:
+            try:
+                obj = view.get_object()
+            except AssertionError:
+                obj = None
+
+            if obj == request.user:
+                return True
+
+            if getattr(obj, 'user', None) == request.user:
+                return True
+
+            if isinstance(obj, models.User) and (obj.is_superuser or obj.is_moderator):
+                return False
+
+            if request.method not in ['POST', 'DELETE']:
+                return True
+            return False
+
         return False
 
-    def has_object_permission(self, request, view, obj):
-        return self.has_permission(request, view)
 
-
-class MyActualUser(BasePermission):
+class MyCounselor(BasePermission):
     def has_permission(self, request, view):
-        if request.method in SAFE_METHODS:
-            return bool(request.user and request.user.is_authenticated)
+        if request.user and request.user.is_authenticated and request.user.is_counselor:
+            try:
+                obj = view.get_object()
+            except AssertionError:
+                obj = None
 
-        obj = view.get_object()
-        return request.user and request.user.is_authenticated and obj == request.user
+            if obj == request.user:
+                return True
 
-    def has_object_permission(self, request, view, obj):
-        return request.user and request.user.is_authenticated and obj == request.user
+            if getattr(obj, 'user', None) == request.user:
+                return True
+
+            if request.method in SAFE_METHODS:
+                if isinstance(obj, models.User) and not obj.is_superuser:
+                    return True
+            return False
+
+        return False
+
+
+class MyRegularUser(BasePermission):
+    def has_permission(self, request, view):
+        if request.user and request.user.is_authenticated and request.user.is_regular_user:
+            try:
+                obj = view.get_object()
+            except AssertionError:
+                obj = None
+
+            if obj == request.user:
+                return True
+
+            if getattr(obj, 'user', None) == request.user:
+                return True
+
+            if request.method in SAFE_METHODS:
+                if isinstance(obj, models.User) and not obj.is_superuser:
+                    return True
+            return False
+
+        return False
 
 
 class MyUserPerm(BasePermission):
-    op1 = MyIsAdminUser()
-    op2 = MyActualUser()
-    op3 = MyModeratorUser()
+    op1 = MyAdminUser()
+    op2 = MyModeratorUser()
+    op3 = MyCounselor()
+    op4 = MyRegularUser()
 
     def has_permission(self, request, view):
         return (
             self.op1.has_permission(request, view) or
             self.op2.has_permission(request, view) or
-            self.op3.has_permission(request, view)
-        )
-
-    def has_object_permission(self, request, view, obj):
-        return (
-            self.op1.has_object_permission(request, view, obj)
-        ) or (
-            self.op2.has_object_permission(request, view, obj)
-        ) or (
-            self.op3.has_object_permission(request, view, obj)
+            self.op3.has_permission(request, view) or
+            self.op4.has_permission(request, view)
         )

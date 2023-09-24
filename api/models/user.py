@@ -96,7 +96,7 @@ class User(AbstractBaseUser, PermissionsMixin, BaseModel):
         if not user or user and user.password != self.password:
             self.set_password(self.password)
 
-        if user and not user.is_superuser and self.is_superuser:
+        if user and not self.is_staff and self.is_superuser:
             self.is_staff = True
 
         super().save(*args, **kwargs)

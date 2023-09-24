@@ -78,13 +78,11 @@ REST_FRAMEWORK = {
     'DEFAULT_PARSER_CLASSES': [
         'rest_framework.parsers.FormParser',
         'rest_framework.parsers.JSONParser',
-        # 'rest_framework.parsers.MultiPartParser',
     ],
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     'PAGE_SIZE': 10,
     'DEFAULT_ORDERING': ('created_at',),
-    # 'SCHEMA_GENERATOR_CLASS': 'trusel.api.utils.schema.MySchemaGenerator',
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
@@ -101,7 +99,6 @@ SPECTACULAR_SETTINGS = {
     'SWAGGER_UI_DIST': 'SIDECAR',
     'SWAGGER_UI_FAVICON_HREF': 'SIDECAR',
     'REDOC_DIST': 'SIDECAR',
-    # 'DEFAULT_REQUEST_BODY_FORMAT': 'application/x-www-form-urlencoded',
 }
 
 ROOT_URLCONF = 'trusel.urls'
