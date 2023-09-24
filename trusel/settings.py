@@ -53,7 +53,6 @@ INSTALLED_APPS = [
     'django_filters',
     'drf_spectacular',
     'drf_spectacular_sidecar',
-    'rest_framework_roles',
     'api'
 ]
 
@@ -100,10 +99,6 @@ SPECTACULAR_SETTINGS = {
     'SWAGGER_UI_DIST': 'SIDECAR',
     'SWAGGER_UI_FAVICON_HREF': 'SIDECAR',
     'REDOC_DIST': 'SIDECAR',
-}
-
-REST_FRAMEWORK_ROLES = {
-    'ROLES': 'trusel.roles.ROLES',
 }
 
 ROOT_URLCONF = 'trusel.urls'

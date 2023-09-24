@@ -7,8 +7,9 @@ from api import serializers, models
 from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 
-from api.utils.permissions_and_auth import MyAdmin, MyCounselor, MyIsOwner, MyModerator, MyRegularUser
+from api.utils.permissions_and_auth import MyAdmin, MyCounselor, MyModerator, MyOwner, MyRegularUser
 
 
 class BaseUser(ModelViewSet):
@@ -49,25 +50,20 @@ class BaseUser(ModelViewSet):
 class RegularUser(BaseUser):
     def get_permissions(self):
         if hasattr(self, 'action'):
-            print(f'"{self.action}"', 'this is the action')
             if self.action == 'create':
                 self.permission_classes = []
-            elif self.action == 'retrieve':
-                self.permission_classes = [
-                    MyAdmin | MyModerator | MyCounselor | MyRegularUser]
-            elif self.action == 'list':
-                self.permission_classes = [
-                    MyAdmin | MyModerator | MyCounselor | MyRegularUser]
+            elif self.action in ['retrieve', 'list']:
+                self.permission_classes = [IsAuthenticated]
             elif self.action in ['update' 'partial_update']:
                 self.permission_classes = [MyAdmin | MyModerator |
-                                           MyRegularUser & MyIsOwner]
+                                           MyRegularUser & MyOwner]
             elif self.action in ['destroy']:
-                self.permission_classes = [MyAdmin | MyModerator |
-                                           MyRegularUser & MyIsOwner]
+                self.permission_classes = [MyAdmin | MyRegularUser & MyOwner]
             else:
                 self.permission_classes = []
 
         return [permission_class() for permission_class in self.permission_classes]
+
     serializers_get = serializers.UserRegularUser
     serializers_other = serializers.UserPostRegularUser
     queryset = models.User.objects.filter(role=REGULAR_USER)
@@ -75,6 +71,23 @@ class RegularUser(BaseUser):
 
 @extend_schema(tags=['Counselor'])
 class Counselor(BaseUser):
+    def get_permissions(self):
+        if hasattr(self, 'action'):
+            print(f'"{self.action}"', 'this is the action')
+            if self.action == 'create':
+                self.permission_classes = []
+            elif self.action in ['retrieve', 'list']:
+                self.permission_classes = [IsAuthenticated]
+            elif self.action in ['update' 'partial_update']:
+                self.permission_classes = [MyAdmin | MyModerator |
+                                           MyCounselor & MyOwner]
+            elif self.action in ['destroy']:
+                self.permission_classes = [MyAdmin | MyCounselor & MyOwner]
+            else:
+                self.permission_classes = []
+
+        return [permission_class() for permission_class in self.permission_classes]
+
     serializers_get = serializers.UserCounselor
     serializers_other = serializers.UserPostCounselor
     queryset = models.User.objects.filter(role=COUNSELOR)
@@ -82,12 +95,25 @@ class Counselor(BaseUser):
 
 @extend_schema(tags=['Moderator'])
 class Moderator(BaseUser):
+    def get_permissions(self):
+        if hasattr(self, 'action'):
+            print(f'"{self.action}"', 'this is the action')
+            if self.action == 'create':
+                self.permission_classes = [MyAdmin]
+            elif self.action == 'retrieve':
+                self.permission_classes = [MyAdmin | MyCounselor & MyOwner]
+            elif self.action == 'list':
+                self.permission_classes = [MyAdmin]
+            elif self.action in ['update' 'partial_update', 'destroy']:
+                self.permission_classes = [MyAdmin | MyModerator & MyOwner]
+            else:
+                self.permission_classes = []
+
+        return [permission_class() for permission_class in self.permission_classes]
+
     serializers_get = serializers.UserModerator
     serializers_other = serializers.UserPostModerator
     queryset = models.User.objects.filter(role=MODERATOR)
 
     def get_authenticators(self):
         return [authentication_class() for authentication_class in self.authentication_classes]
-
-    def get_permissions(self):
-        return [permission_class() for permission_class in self.permission_classes]

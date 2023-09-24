@@ -21,11 +21,10 @@ class MyRegularUser(BasePermission):
         return request.user and request.user.is_authenticated and request.user.is_regular_user
 
 
-class MyIsOwner(BasePermission):
+class MyOwner(BasePermission):
     def has_permission(self, request, view):
-        print(request.user, type(request.user), 'userssss')
         try:
             obj = view.get_object()
-        except AssertionError:
+        except Exception as e:
             return False
-        return request.user and request.user.is_authenticated and obj == request.user
+        return obj == request.user
