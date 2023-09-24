@@ -1,4 +1,3 @@
-
 from django.shortcuts import get_object_or_404
 from api import serializers
 from rest_framework.permissions import BasePermission
@@ -11,13 +10,15 @@ from django.core.exceptions import ValidationError
 from django.contrib.auth import password_validation
 from rest_framework import generics, mixins
 from drf_spectacular.utils import extend_schema
-from rest_framework.permissions import BasePermission, IsAuthenticated
+from rest_framework.permissions import BasePermission
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenBlacklistView
 )
+
+from api.utils.permissions_and_auth import MyValidUser
 
 
 class NoPatchPermission(BasePermission):
@@ -36,6 +37,15 @@ class UpdateOnlyAPIView(mixins.UpdateModelMixin,
 @extend_schema(tags=['Auth'])
 class MyTokenObtainPairView(TokenObtainPairView):
     def post(self, request, *args, **kwargs):
+        email = request.data.get('email', '').strip()
+        print(request.user, request.data, email)
+        user = get_user_model().objects.filter(email=email).first()
+        if not user.is_active:
+            return Response({'detail': "user is not active"}, status=status.HTTP_403_FORBIDDEN)
+
+        if not user.email_confirmed:
+            return Response({'detail': "Email not confirmed"}, status=status.HTTP_403_FORBIDDEN)
+
         serializer = self.get_serializer(data=request.data)
 
         try:
@@ -54,7 +64,7 @@ class MyTokenBlacklistView(TokenBlacklistView):
 
 @extend_schema(tags=['Auth'])
 class UserView(generics.GenericAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [MyValidUser]
 
     def get_serializer_class(self):
         return serializers.NoneUser
@@ -143,3 +153,23 @@ class PasswordResetView(UpdateOnlyAPIView):
 
             return Response({'detail': 'Password reset successful'}, status=status.HTTP_200_OK)
         return Response({'detail': 'Invalid token or user'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@extend_schema(tags=['Auth'])
+class ConfirmEmail(generics.CreateAPIView):
+    authentication_classes = ()
+    permission_classes = ()
+    serializer_class = serializers.VerifyOTPSerializer
+
+    def create(self, request):
+        email = request.data.get('email', '').strip()
+        opt = request.data.get('otp', '').strip()
+        user = get_object_or_404(get_user_model(), email=email)
+        status_code = status.HTTP_404_NOT_FOUND
+        data = {'detail': user.verify_otp(opt, verify_and_clear=False)}
+        if data['detail']:
+            user.email_confirmed = True
+            user.save()
+            user.verify_otp(opt, verify_and_clear=True)
+            status_code = status.HTTP_200_OK
+        return Response(data, status=status_code)

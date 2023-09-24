@@ -7,9 +7,8 @@ from api import serializers, models
 from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
 
-from api.utils.permissions_and_auth import MyAdmin, MyCounselor, MyModerator, MyOwner, MyRegularUser
+from api.utils.permissions_and_auth import MyAdmin, MyCounselor, MyModerator, MyOwner, MyRegularUser, MyValidUser
 
 
 class BaseUser(ModelViewSet):
@@ -53,7 +52,7 @@ class RegularUser(BaseUser):
             if self.action == 'create':
                 self.permission_classes = []
             elif self.action in ['retrieve', 'list']:
-                self.permission_classes = [IsAuthenticated]
+                self.permission_classes = [MyValidUser]
             elif self.action in ['update' 'partial_update']:
                 self.permission_classes = [MyAdmin | MyModerator |
                                            MyRegularUser & MyOwner]
@@ -76,7 +75,7 @@ class Counselor(BaseUser):
             if self.action == 'create':
                 self.permission_classes = []
             elif self.action in ['retrieve', 'list']:
-                self.permission_classes = [IsAuthenticated]
+                self.permission_classes = [MyValidUser]
             elif self.action in ['update' 'partial_update']:
                 self.permission_classes = [MyAdmin | MyModerator |
                                            MyCounselor & MyOwner]

@@ -25,6 +25,9 @@ urlpatterns = [
     path('verify-otp/', views.VerifyOTP.as_view(),
          name='verify_otp'),
 
+    path('confirm-email/', views.ConfirmEmail.as_view(),
+         name='confirm_email'),
+
     path('forgot-password/', views.ForgotPasswordView.as_view(),
          name='forgot_password'),
 

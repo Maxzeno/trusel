@@ -27,7 +27,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.User
-        fields = ['id', 'email', 'username', 'is_active', 'email_confirmed',
+        fields = ['id', 'email', 'username', 'is_active',
                   'role', 'user']
 
 
@@ -35,7 +35,7 @@ class NoneUser(serializers.ModelSerializer):
     class Meta:
         model = models.User
         fields = ['id', 'email', 'username',
-                  'is_active', 'email_confirmed', 'role']
+                  'is_active', 'role']
 
 
 class UserRegularUser(UserSerializer):
