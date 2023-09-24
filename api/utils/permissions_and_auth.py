@@ -23,8 +23,9 @@ class MyRegularUser(BasePermission):
 
 class MyOwner(BasePermission):
     def has_permission(self, request, view):
+        print(view.kwargs)
         try:
-            obj = view.get_object()
+            obj = view.get_queryset().get(pk=view.kwargs['pk'])
         except Exception as e:
             return False
         return obj == request.user

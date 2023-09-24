@@ -73,7 +73,6 @@ class RegularUser(BaseUser):
 class Counselor(BaseUser):
     def get_permissions(self):
         if hasattr(self, 'action'):
-            print(f'"{self.action}"', 'this is the action')
             if self.action == 'create':
                 self.permission_classes = []
             elif self.action in ['retrieve', 'list']:
@@ -97,7 +96,6 @@ class Counselor(BaseUser):
 class Moderator(BaseUser):
     def get_permissions(self):
         if hasattr(self, 'action'):
-            print(f'"{self.action}"', 'this is the action')
             if self.action == 'create':
                 self.permission_classes = [MyAdmin]
             elif self.action == 'retrieve':
