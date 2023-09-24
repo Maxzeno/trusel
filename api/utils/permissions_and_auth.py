@@ -11,6 +11,8 @@ class MyAdminUser(BasePermission):
                 obj = None
 
             if obj != request.user and isinstance(obj, models.User) and obj.is_superuser:
+                if request.method == "POST":
+                    return True
                 return False
             return True
         return False
@@ -30,7 +32,7 @@ class MyModeratorUser(BasePermission):
             if getattr(obj, 'user', None) == request.user:
                 return True
 
-            if isinstance(obj, models.User) and (obj.is_superuser or obj.is_moderator):
+            if isinstance(obj, models.User) and (obj.is_superuser):
                 return False
 
             if request.method not in ['POST', 'DELETE']:
@@ -57,6 +59,11 @@ class MyCounselor(BasePermission):
             if request.method in SAFE_METHODS:
                 if isinstance(obj, models.User) and not obj.is_superuser:
                     return True
+
+                elif not isinstance(obj, models.User):
+                    return True
+                else:
+                    return False
             return False
 
         return False
@@ -64,6 +71,7 @@ class MyCounselor(BasePermission):
 
 class MyRegularUser(BasePermission):
     def has_permission(self, request, view):
+        print('user oo')
         if request.user and request.user.is_authenticated and request.user.is_regular_user:
             try:
                 obj = view.get_object()
@@ -79,6 +87,12 @@ class MyRegularUser(BasePermission):
             if request.method in SAFE_METHODS:
                 if isinstance(obj, models.User) and not obj.is_superuser:
                     return True
+                elif not isinstance(obj, models.User) and not getattr(obj, 'user', False):
+                    return True
+                elif not isinstance(obj, models.User):
+                    return True
+                else:
+                    return False
             return False
 
         return False
