@@ -11,7 +11,7 @@ class RegularUser(serializers.ModelSerializer):
 class Counselor(serializers.ModelSerializer):
     class Meta:
         model = models.Counselor
-        fields = ['qualification']
+        fields = ['qualification', 'description']
 
 
 class Moderator(serializers.ModelSerializer):
@@ -47,19 +47,67 @@ class UserModerator(UserSerializer):
 class UserCounselor(UserSerializer):
     user = Counselor(source='counselor')
 
-# POST
+# POST, PUT, PATCH
 
 
 class UserPostSerializer(serializers.Serializer):
     email = serializers.EmailField()
     username = serializers.CharField(max_length=250)
     password = serializers.CharField(min_length=8, max_length=100)
+
+    def validate_email(self, value):
+        if models.User.objects.filter(email=value).exclude(id=self.instance.id if self.instance else None).exists():
+            raise serializers.ValidationError(
+                "This email address is already in use.")
+        return value
+
+    def validate_username(self, value):
+        if models.User.objects.filter(username=value).exclude(id=self.instance.id if self.instance else None).exists():
+            raise serializers.ValidationError(
+                "This username is already in use.")
+        return value
+
+
+class UserPostRegularUser(UserPostSerializer):
     profession = serializers.CharField(allow_blank=True)
 
     def create(self, validated_data):
+        print(validated_data)
         profession = validated_data.pop('profession', '')
+        print(validated_data)
+
         user = models.User.objects.create(**validated_data)
         if profession:
-            profession = models.RegularUser.objects.create(
+            models.RegularUser.objects.create(
                 profession=profession, user=user)
+        return user
+
+
+class UserPostCounselor(UserPostSerializer):
+    qualification = serializers.CharField(allow_blank=True)
+    description = serializers.CharField(allow_blank=True)
+
+    def create(self, validated_data):
+        print(validated_data)
+        qualification = validated_data.pop('qualification', '')
+        description = validated_data.pop('description', '')
+        print(validated_data)
+
+        user = models.User.objects.create(**validated_data)
+        if qualification or description:
+            models.Counselor.objects.create(
+                qualification=qualification, description=description, user=user)
+        return user
+
+
+class UserPostModerator(UserPostSerializer):
+    qualification = serializers.CharField(allow_blank=True)
+
+    def create(self, validated_data):
+        qualification = validated_data.pop('qualification', '')
+
+        user = models.User.objects.create(**validated_data)
+        if qualification:
+            models.Moderator.objects.create(
+                qualification=qualification, user=user)
         return user

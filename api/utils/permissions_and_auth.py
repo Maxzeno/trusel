@@ -1,4 +1,4 @@
-from rest_framework.permissions import BasePermission
+from rest_framework.permissions import BasePermission, SAFE_METHODS
 
 
 class MyIsAdminUser(BasePermission):
@@ -11,9 +11,9 @@ class MyIsAdminUser(BasePermission):
 
 class MyModeratorUser(BasePermission):
     def has_permission(self, request, view):
-        if request.method in ['POST', 'DELETE']:
-            return False
-        return bool(request.user and request.user.is_authenticated and request.user.is_moderator)
+        if request.method not in ['POST', 'DELETE']:
+            return bool(request.user and request.user.is_authenticated and request.user.is_moderator)
+        return False
 
     def has_object_permission(self, request, view, obj):
         return self.has_permission(request, view)
@@ -21,14 +21,17 @@ class MyModeratorUser(BasePermission):
 
 class MyActualUser(BasePermission):
     def has_permission(self, request, view):
-        if request.method in ['GET']:
+        print(dir(view), SAFE_METHODS)
+        if request.method in SAFE_METHODS:
             return bool(request.user and request.user.is_authenticated)
-        return bool(request.user and request.user.is_authenticated)
+
+        # obj = view.get_object()
+        # print(obj.user, request.user, obj.user == request.user)
+        # obj.user == request.user
+        return request.user and request.user.is_authenticated and False
 
     def has_object_permission(self, request, view, obj):
-        if request.method in ['GET']:
-            return bool(request.user and request.user.is_authenticated)
-        return obj == request.user and request.user.is_authenticated
+        return self.has_permission(request, view)
 
 
 class MyUserPerm(BasePermission):
@@ -45,12 +48,9 @@ class MyUserPerm(BasePermission):
 
     def has_object_permission(self, request, view, obj):
         return (
-            self.op1.has_permission(request, view)
-            and self.op1.has_object_permission(request, view, obj)
+            self.op1.has_object_permission(request, view, obj)
         ) or (
-            self.op2.has_permission(request, view)
-            and self.op2.has_object_permission(request, view, obj)
+            self.op2.has_object_permission(request, view, obj)
         ) or (
-            self.op3.has_permission(request, view)
-            and self.op3.has_object_permission(request, view, obj)
+            self.op3.has_object_permission(request, view, obj)
         )
