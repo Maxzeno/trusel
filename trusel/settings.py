@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'django_filters',
     'drf_spectacular',
     'drf_spectacular_sidecar',
+    'rest_framework_roles',
     'api'
 ]
 
@@ -73,7 +74,7 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': [
-        'api.utils.permissions_and_auth.MyUserPerm',
+        'api.utils.permissions_and_auth.MyAdmin',
     ],
     'DEFAULT_PARSER_CLASSES': [
         'rest_framework.parsers.FormParser',
@@ -99,6 +100,10 @@ SPECTACULAR_SETTINGS = {
     'SWAGGER_UI_DIST': 'SIDECAR',
     'SWAGGER_UI_FAVICON_HREF': 'SIDECAR',
     'REDOC_DIST': 'SIDECAR',
+}
+
+REST_FRAMEWORK_ROLES = {
+    'ROLES': 'trusel.roles.ROLES',
 }
 
 ROOT_URLCONF = 'trusel.urls'

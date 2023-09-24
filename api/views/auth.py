@@ -11,7 +11,7 @@ from django.core.exceptions import ValidationError
 from django.contrib.auth import password_validation
 from rest_framework import generics, mixins
 from drf_spectacular.utils import extend_schema
-from rest_framework.permissions import BasePermission
+from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 
 from rest_framework_simplejwt.views import (
@@ -54,6 +54,7 @@ class MyTokenBlacklistView(TokenBlacklistView):
 
 @extend_schema(tags=['Auth'])
 class UserView(generics.GenericAPIView):
+    permission_classes = [IsAuthenticated]
 
     def get_serializer_class(self):
         return serializers.NoneUser

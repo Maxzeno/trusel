@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from api import models
 
+# LIST, RETRIEVE
+
 
 class RegularUser(serializers.ModelSerializer):
     class Meta:
@@ -47,7 +49,7 @@ class UserModerator(UserSerializer):
 class UserCounselor(UserSerializer):
     user = Counselor(source='counselor')
 
-# POST, PUT, PATCH
+# CREATE
 
 
 class UserPostSerializer(serializers.Serializer):
@@ -80,6 +82,15 @@ class UserPostRegularUser(UserPostSerializer):
                 profession=profession, user=user)
         return user
 
+    def update(self, instance, validated_data):
+        instance.regularuser.profession = validated_data.pop('profession', '')
+        instance.regularuser.save()
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        return instance
+
 
 class UserPostCounselor(UserPostSerializer):
     qualification = serializers.CharField(allow_blank=True)
@@ -95,6 +106,17 @@ class UserPostCounselor(UserPostSerializer):
                 qualification=qualification, description=description, user=user)
         return user
 
+    def update(self, instance, validated_data):
+        instance.counselor.qualification = validated_data.pop(
+            'qualification', '')
+        instance.counselor.description = validated_data.pop('description', '')
+        instance.counselor.save()
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        return instance
+
 
 class UserPostModerator(UserPostSerializer):
     qualification = serializers.CharField(allow_blank=True)
@@ -107,3 +129,16 @@ class UserPostModerator(UserPostSerializer):
             models.Moderator.objects.create(
                 qualification=qualification, user=user)
         return user
+
+    def update(self, instance, validated_data):
+        instance.moderator.qualification = validated_data.pop(
+            'qualification', '')
+        instance.moderator.save()
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        return instance
+
+
+# UPDATE, PARTIAL_UPDATE
