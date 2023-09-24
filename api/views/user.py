@@ -25,16 +25,28 @@ class RegularUser(ModelViewSet):
         return [authentication_class() for authentication_class in self.authentication_classes]
 
     def get_permissions(self):
-        if self.action == 'create':
+        if hasattr(self.request, 'method') and self.request.method == 'POST':
+            return []
+
+        if hasattr(self, 'action') and self.action == 'create':
             return []
         return [permission_class() for permission_class in self.permission_classes]
 
     def get_serializer_class(self):
+        if hasattr(self.request, 'method') and self.request.method == 'POST':
+            return serializers.UserPostSerializer
+
+        if hasattr(self, 'action') and self.action == 'create':
+            return serializers.UserPostSerializer
         return serializers.UserRegularUser
 
-    # def create(self, request, *args, **kwargs):
-    #     # print(request, dir(request), request.data, request.POST)
-    #     return super().create(request, *args, **kwargs)
+    def create(self, request, *args, **kwargs):
+        serialize = serializers.UserPostSerializer(data=request.data)
+        print(dir(serialize), serialize.data, dir(serialize.is_valid))
+        if serialize.is_valid():
+            print('hoooooo')
+            serialize.save()
+        return serialize
 
 
 @extend_schema(tags=['Counselor'])
@@ -55,7 +67,10 @@ class Counselor(ModelViewSet):
         return [authentication_class() for authentication_class in self.authentication_classes]
 
     def get_permissions(self):
-        if self.action == 'create':
+        if hasattr(self.request, 'method') and self.request.method == 'POST':
+            return []
+
+        if hasattr(self, 'action') and self.action == 'create':
             return []
         return [permission_class() for permission_class in self.permission_classes]
 

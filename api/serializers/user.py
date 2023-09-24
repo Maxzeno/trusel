@@ -49,15 +49,17 @@ class UserCounselor(UserSerializer):
 
 # POST
 
-# class UserPostSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = models.User
-#         fields = ['id', 'email', 'password', 'username', 'is_active', 'email_confirmed',
-#                   'role', 'profession']
 
-#     def to_representation(self, instance):
-#         representation = super().to_representation(instance)
-#         regular_user = RegularUser.objects.filter(user=instance)
+class UserPostSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    username = serializers.CharField(max_length=250)
+    password = serializers.CharField(min_length=8, max_length=100)
+    profession = serializers.CharField(allow_blank=True)
 
-#         representation['profession'] = regular_user.profession
-#         return representation
+    def create(self, validated_data):
+        profession = validated_data.pop('profession', '')
+        user = models.User.objects.create(**validated_data)
+        if profession:
+            profession = models.RegularUser.objects.create(
+                profession=profession, user=user)
+        return user

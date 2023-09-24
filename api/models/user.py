@@ -14,6 +14,13 @@ REGULAR_USER = 1
 COUNSELOR = 2
 MODERATOR = 3
 
+ROLES = [
+    (NONE, 'NONE'),
+    (REGULAR_USER, 'USER'),
+    (COUNSELOR, 'COUNSELOR'),
+    (MODERATOR, 'MODERATOR'),
+]
+
 
 class BaseModel(models.Model):
     created_at = models.DateTimeField(default=timezone.now)
@@ -67,13 +74,6 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractBaseUser, PermissionsMixin, BaseModel):
-    ROLES = [
-        (NONE, 'NONE'),
-        (REGULAR_USER, 'USER'),
-        (COUNSELOR, 'COUNSELOR'),
-        (MODERATOR, 'MODERATOR'),
-    ]
-
     id = models.CharField(primary_key=True, max_length=6, editable=False)
     email = models.EmailField(unique=True)
     username = models.CharField(max_length=250, default='N/A')
