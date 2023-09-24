@@ -150,7 +150,7 @@ class User(AbstractBaseUser, PermissionsMixin, BaseModel):
 
 
 class RegularUser(models.Model):
-    user = models.OneToOneField(User, on_delete=models.DO_NOTHING, null=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True)
     profession = models.CharField(max_length=250, default='N/A')
 
     def save(self, *args, **kwargs):
@@ -163,7 +163,7 @@ class RegularUser(models.Model):
 
 
 class Counselor(models.Model):
-    user = models.OneToOneField(User, on_delete=models.DO_NOTHING, null=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True)
     qualification = models.CharField(max_length=250, default='N/A')
     description = models.CharField(max_length=250, default='N/A')
 
@@ -179,7 +179,7 @@ class Counselor(models.Model):
 
 
 class Moderator(models.Model):
-    user = models.OneToOneField(User, on_delete=models.DO_NOTHING, null=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True)
     qualification = models.CharField(max_length=250, default='N/A')
 
     def save(self, *args, **kwargs):

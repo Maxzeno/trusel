@@ -72,9 +72,7 @@ class UserPostRegularUser(UserPostSerializer):
     profession = serializers.CharField(allow_blank=True)
 
     def create(self, validated_data):
-        print(validated_data)
         profession = validated_data.pop('profession', '')
-        print(validated_data)
 
         user = models.User.objects.create(**validated_data)
         if profession:
@@ -88,10 +86,8 @@ class UserPostCounselor(UserPostSerializer):
     description = serializers.CharField(allow_blank=True)
 
     def create(self, validated_data):
-        print(validated_data)
         qualification = validated_data.pop('qualification', '')
         description = validated_data.pop('description', '')
-        print(validated_data)
 
         user = models.User.objects.create(**validated_data)
         if qualification or description:

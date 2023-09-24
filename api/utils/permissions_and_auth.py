@@ -21,17 +21,14 @@ class MyModeratorUser(BasePermission):
 
 class MyActualUser(BasePermission):
     def has_permission(self, request, view):
-        print(dir(view), SAFE_METHODS)
         if request.method in SAFE_METHODS:
             return bool(request.user and request.user.is_authenticated)
 
-        # obj = view.get_object()
-        # print(obj.user, request.user, obj.user == request.user)
-        # obj.user == request.user
-        return request.user and request.user.is_authenticated and False
+        obj = view.get_object()
+        return request.user and request.user.is_authenticated and obj == request.user
 
     def has_object_permission(self, request, view, obj):
-        return self.has_permission(request, view)
+        return request.user and request.user.is_authenticated and obj == request.user
 
 
 class MyUserPerm(BasePermission):
