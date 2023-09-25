@@ -1,6 +1,1 @@
-- need to work on the create user for regular user and counselor
-
-- need to added if user is not is_active and confirmed email no token (no login) - check in perm
-    i will do the check in perm
-
-- need to send confirm email on user create
+- need to work on update user 

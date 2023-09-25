@@ -13,7 +13,8 @@ from api.utils.permissions_and_auth import MyAdmin, MyCounselor, MyModerator, My
 
 class BaseUser(ModelViewSet):
     serializers_get = ''
-    serializers_other = ''
+    serializers_post = ''
+    serializers_update = ''
 
     def get_parsers(self):
         self.parser_classes.append(MultiPartParser)
@@ -33,15 +34,27 @@ class BaseUser(ModelViewSet):
 
     def get_serializer_class(self):
         if hasattr(self, 'action') and self.action == 'create':
-            return self.serializers_other
+            return self.serializers_post
+        if hasattr(self, 'action') and self.action in ['update', 'partial_update']:
+            return self.serializers_update
         return self.serializers_get
 
     def create(self, request, *args, **kwargs):
-        serializer = self.serializers_other(data=request.data)
+        serializer = self.serializers_post(data=request.data)
         if serializer.is_valid():
             data = serializer.create(serializer.data)
             user = self.serializers_get(data)
             return Response(user.data, status=status.HTTP_201_CREATED)
+        return Response({'detail': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+
+        serializer = self.serializers_update(data=request.data)
+        if serializer.is_valid():
+            data = serializer.update(instance, serializer.data)
+            user = self.serializers_get(data)
+            return Response(user.data, status=status.HTTP_200_OK)
         return Response({'detail': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -64,7 +77,9 @@ class RegularUser(BaseUser):
         return [permission_class() for permission_class in self.permission_classes]
 
     serializers_get = serializers.UserRegularUser
-    serializers_other = serializers.UserPostRegularUser
+    serializers_post = serializers.UserPostRegularUser
+    serializers_update = serializers.UserUpdateRegularUser
+
     queryset = models.User.objects.filter(role=REGULAR_USER)
 
 
@@ -87,7 +102,9 @@ class Counselor(BaseUser):
         return [permission_class() for permission_class in self.permission_classes]
 
     serializers_get = serializers.UserCounselor
-    serializers_other = serializers.UserPostCounselor
+    serializers_post = serializers.UserPostCounselor
+    serializers_update = serializers.UserUpdateCounselor
+
     queryset = models.User.objects.filter(role=COUNSELOR)
 
 
@@ -109,7 +126,9 @@ class Moderator(BaseUser):
         return [permission_class() for permission_class in self.permission_classes]
 
     serializers_get = serializers.UserModerator
-    serializers_other = serializers.UserPostModerator
+    serializers_post = serializers.UserPostModerator
+    serializers_update = serializers.UserUpdateModerator
+
     queryset = models.User.objects.filter(role=MODERATOR)
 
     def get_authenticators(self):

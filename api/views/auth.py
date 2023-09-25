@@ -38,8 +38,10 @@ class UpdateOnlyAPIView(mixins.UpdateModelMixin,
 class MyTokenObtainPairView(TokenObtainPairView):
     def post(self, request, *args, **kwargs):
         email = request.data.get('email', '').strip()
-        print(request.user, request.data, email)
         user = get_user_model().objects.filter(email=email).first()
+        if not user:
+            raise InvalidToken()
+
         if not user.is_active:
             return Response({'detail': "user is not active"}, status=status.HTTP_403_FORBIDDEN)
 
@@ -50,10 +52,19 @@ class MyTokenObtainPairView(TokenObtainPairView):
 
         try:
             serializer.is_valid(raise_exception=True)
+            if user.is_regular_user:
+                user_serializer = serializers.UserRegularUser(user)
+            elif user.is_counselor:
+                user_serializer = serializers.UserCounselor(user)
+            elif user.is_moderator:
+                user_serializer = serializers.UserModerator(user)
+            else:
+                user_serializer = serializers.NoneUser(user)
+            data = user_serializer.data
+            data['token'] = serializer.validated_data['access']
         except TokenError as e:
             raise InvalidToken(e.args[0])
 
-        data = {'token': serializer.validated_data['access']}
         return Response(data, status=status.HTTP_200_OK)
 
 
@@ -156,7 +167,7 @@ class PasswordResetView(UpdateOnlyAPIView):
 
 
 @extend_schema(tags=['Auth'])
-class ConfirmEmail(generics.CreateAPIView):
+class ConfirmEmailView(generics.CreateAPIView):
     authentication_classes = ()
     permission_classes = ()
     serializer_class = serializers.VerifyOTPSerializer
@@ -173,3 +184,30 @@ class ConfirmEmail(generics.CreateAPIView):
             user.verify_otp(opt, verify_and_clear=True)
             status_code = status.HTTP_200_OK
         return Response(data, status=status_code)
+
+
+@extend_schema(tags=['Auth'])
+class SendConfirmEmailView(generics.CreateAPIView):
+    serializer_class = serializers.ForgotPasswordSerializer
+    authentication_classes = ()
+    permission_classes = ()
+
+    def create(self, request, *args, **kwargs):
+        email = request.data.get('email', '').strip()
+        user = get_user_model().objects.filter(email=email).first()
+
+        if user:
+            # html_body = get_template('login/template_confirm_email.html').render({'confirmation_email': link, 'base_url': base_url})
+            try:
+                msg = EmailMultiAlternatives(
+                    'Confirm Your Email Code',
+                    f'OTP code use it to confirm your email: {user.generate_otp()}',
+                    config('EMAIL_HOST_USER'),
+                    [email]
+                )
+                # msg.attach_alternative(html_body, "text/html")
+                msg.send()
+                return Response({'detail': 'If an account with this email exists, a confirmation email has been sent.'}, status=status.HTTP_200_OK)
+            except ConnectionRefusedError as e:
+                return Response({'detail': 'An error accurred while tring to send email'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({'detail': 'If an account with this email exists, a confirmation  email has been sent.'}, status=status.HTTP_200_OK)

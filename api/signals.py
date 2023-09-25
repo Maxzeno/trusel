@@ -8,7 +8,6 @@ from django.core.mail import EmailMultiAlternatives
 
 @receiver(post_save, sender=models.User)
 def send_confirmation_email(sender, instance, created, **kwargs):
-    print(instance, sender)
     if created:
         try:
             msg = EmailMultiAlternatives(

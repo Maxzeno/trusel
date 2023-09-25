@@ -63,12 +63,6 @@ class UserPostSerializer(serializers.Serializer):
                 "This email address is already in use.")
         return value
 
-    def validate_username(self, value):
-        if models.User.objects.filter(username=value).exclude(id=self.instance.id if self.instance else None).exists():
-            raise serializers.ValidationError(
-                "This username is already in use.")
-        return value
-
 
 class UserPostRegularUser(UserPostSerializer):
     profession = serializers.CharField(allow_blank=True)
@@ -142,3 +136,51 @@ class UserPostModerator(UserPostSerializer):
 
 
 # UPDATE, PARTIAL_UPDATE
+
+class UserUpdateSerializer(serializers.Serializer):
+    username = serializers.CharField(max_length=250)
+
+
+class UserUpdateRegularUser(UserUpdateSerializer):
+    profession = serializers.CharField(allow_blank=True)
+
+    def update(self, instance, validated_data):
+        instance.regularuser.profession = validated_data.pop(
+            'profession', None) or instance.regularuser.profession
+        instance.regularuser.save()
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        return instance
+
+
+class UserUpdateCounselor(UserUpdateSerializer):
+    qualification = serializers.CharField(allow_blank=True)
+    description = serializers.CharField(allow_blank=True)
+
+    def update(self, instance, validated_data):
+        instance.counselor.qualification = validated_data.pop(
+            'qualification', None) or instance.counselor.qualification
+        instance.counselor.description = validated_data.pop(
+            'description', None) or instance.counselor.description
+        instance.counselor.save()
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        return instance
+
+
+class UserUpdateModerator(UserUpdateSerializer):
+    qualification = serializers.CharField(allow_blank=True)
+
+    def update(self, instance, validated_data):
+        instance.moderator.qualification = validated_data.pop(
+            'qualification', None) or instance.moderator.qualification
+        instance.moderator.save()
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        return instance
